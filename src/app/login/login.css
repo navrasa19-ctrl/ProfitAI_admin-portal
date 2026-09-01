@@ -1,0 +1,42 @@
+:host { display: block; min-height: 100vh; }
+.auth-page { display: grid; grid-template-columns: minmax(320px, .9fr) minmax(420px, 1.1fr); min-height: 100vh; background: #f4f6f8; color: #17212b; font-family: Georgia, 'Times New Roman', serif; }
+.auth-intro { display: flex; flex-direction: column; justify-content: space-between; padding: 42px 10%; background: #0f1a1d; color: #fff; }
+.brand { display: inline-flex; align-items: center; gap: 11px; width: fit-content; color: #fff; text-decoration: none; font-size: 17px; letter-spacing: .08em; font-weight: 700; }
+.brand strong { color: #d8b25a; }
+.brand em { margin-left: 8px; padding: 3px 8px; border: 1px solid #3a4a4f; border-radius: 20px; color: #9fb0b3; font: 700 9px Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase; font-style: normal; }
+.brand-mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 8px; background: #8a0022; font-size: 21px; }
+.intro-copy { max-width: 460px; }
+.intro-copy h1 { margin: 14px 0 18px; font-size: clamp(32px, 3.6vw, 52px); line-height: 1.05; letter-spacing: -.03em; }
+.intro-copy p:last-child { max-width: 390px; color: #a9bdbf; font: 14px/1.7 Arial, sans-serif; }
+.eyebrow { margin: 0; color: #8a0022; font: 700 10px Arial, sans-serif; letter-spacing: .15em; text-transform: uppercase; }
+.auth-intro .eyebrow { color: #d8b25a; }
+.intro-foot { display: flex; align-items: center; gap: 10px; color: #93a5a7; font: 11px Arial, sans-serif; }
+.live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #38bd8c; box-shadow: 0 0 0 4px rgba(56,189,140,.15); }
+.auth-card { align-self: center; width: min(100% - 80px, 480px); margin: 0 auto; padding: 40px; border: 1px solid #dfe5e8; border-radius: 10px; background: #fff; box-shadow: 0 18px 45px rgba(28,48,58,.08); }
+.form-heading h2 { margin: 10px 0 8px; color: #17212b; font-size: 28px; }
+.form-heading p:last-child { margin: 0; color: #7a8991; font: 13px/1.6 Arial, sans-serif; }
+.auth-card form { display: grid; gap: 18px; margin-top: 30px; }
+.auth-card label { display: grid; gap: 8px; color: #43545c; font: 700 11px Arial, sans-serif; }
+.auth-card input { width: 100%; box-sizing: border-box; padding: 13px 14px; border: 1px solid #d5dfe1; border-radius: 6px; outline: 0; color: #17212b; background: #fbfcfc; font: 13px Arial, sans-serif; }
+.auth-card input:focus { border-color: #8a0022; box-shadow: 0 0 0 3px #f3e8ec; }
+.auth-card small { color: #a12b44; font: 10px Arial, sans-serif; }
+.submit-button { margin-top: 5px; padding: 14px 16px; border: 0; border-radius: 6px; background: #17212b; color: #fff; cursor: pointer; font: 700 12px Arial, sans-serif; }
+.submit-button:hover { background: #0f1a1d; }
+.submit-button:disabled { opacity: .6; cursor: wait; }
+.submit-button span { margin-left: 10px; font-size: 16px; }
+.error-message { margin-top: 20px; padding: 11px 13px; border: 1px solid #edcbd3; border-radius: 5px; background: #fcf1f3; color: #8a0022; font: 11px/1.5 Arial, sans-serif; }
+.two-factor-step { margin-top: 26px; text-align: center; }
+.two-factor-icon { display: inline-grid; place-items: center; width: 46px; height: 46px; margin-bottom: 14px; border-radius: 10px; background: #f3e8ec; color: #8a0022; font: 700 12px Arial, sans-serif; }
+.two-factor-step h3 { margin: 0 0 8px; color: #17212b; font-size: 20px; }
+.two-factor-step p { margin: 0 0 18px; color: #7a8991; font: 12px/1.6 Arial, sans-serif; }
+.otp-input { width: 100%; box-sizing: border-box; padding: 14px; border: 1px solid #d5dfe1; border-radius: 6px; text-align: center; letter-spacing: .3em; outline: 0; font: 700 18px 'Courier New', monospace; }
+.otp-input:focus { border-color: #8a0022; }
+.back-button { width: 100%; margin-top: 12px; padding: 10px; border: 0; background: transparent; color: #7a8991; cursor: pointer; font: 700 11px Arial, sans-serif; }
+@media (max-width: 760px) {
+  .auth-page { grid-template-columns: 1fr; }
+  .auth-intro { min-height: 260px; padding: 28px 24px; }
+  .intro-copy { margin: 40px 0 15px; }
+  .intro-copy h1 { font-size: 32px; }
+  .intro-copy p:last-child, .intro-foot { display: none; }
+  .auth-card { width: calc(100% - 44px); box-sizing: border-box; margin: 28px auto; padding: 28px 22px; }
+}

@@ -1,0 +1,31 @@
+<main class="auth-page">
+	<section class="auth-intro">
+		<span class="brand"><span class="brand-mark">P</span><span>PROFIT <strong>AI</strong> <em>Admin</em></span></span>
+		<div class="intro-copy">
+			<p class="eyebrow">Copy trading control room</p>
+			<h1>One leader trade. Every follower, in milliseconds.</h1>
+			<p>Open and close leader positions, and watch the copy engine roll out to followers as it comes online, phase by phase.</p>
+		</div>
+		<div class="intro-foot"><span class="live-dot"></span> Admin-only access &middot; JWT + role verified</div>
+	</section>
+	<section class="auth-card">
+		<div class="form-heading"><p class="eyebrow">Restricted area</p><h2>Sign in to the admin console</h2><p>Use an account with ADMIN role.</p></div>
+		@if (errorMessage) { <div class="error-message" role="alert">{{ errorMessage }}</div> }
+		@if (!twoFactorToken) {
+			<form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+				<label>Admin email<input type="email" formControlName="email" autocomplete="email" placeholder="admin@profitai.com"><small *ngIf="form.controls.email.touched && form.controls.email.invalid">Enter a valid email address.</small></label>
+				<label>Password<input type="password" formControlName="password" autocomplete="current-password" placeholder="Your password"><small *ngIf="form.controls.password.touched && form.controls.password.invalid">Password is required.</small></label>
+				<button class="submit-button" type="submit" [disabled]="submitting">{{ submitting ? 'Signing in...' : 'Enter console' }} <span>&rarr;</span></button>
+			</form>
+		} @else {
+			<div class="two-factor-step">
+				<div class="two-factor-icon">2FA</div>
+				<h3>Verify your sign in</h3>
+				<p>Enter the six-digit code from your authenticator app to continue.</p>
+				<input class="otp-input" type="text" inputmode="numeric" maxlength="6" [(ngModel)]="twoFactorCode" [ngModelOptions]="{standalone: true}" placeholder="000000" aria-label="Six digit authentication code">
+				<button class="submit-button" type="button" (click)="verifyTwoFactor()" [disabled]="submitting || twoFactorCode.length !== 6">{{ submitting ? 'Verifying...' : 'Verify code' }} <span>&rarr;</span></button>
+				<button class="back-button" type="button" (click)="backToPassword()">Back to sign in</button>
+			</div>
+		}
+	</section>
+</main>

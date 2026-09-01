@@ -1,0 +1,394 @@
+<div class="console-shell">
+	<header class="topbar">
+		<span class="brand"><span class="brand-mark">P</span><span class="brand-name">PROFIT
+				<strong>AI</strong></span><em>Admin</em></span>
+
+		<div class="topbar-status">
+			<span class="live-dot" [class.stopped]="systemStopped()"></span>
+			<span>{{ systemStopped() ? 'Copy engine stopped' : 'Systems operational' }}</span>
+		</div>
+
+		<div class="topbar-actions">
+			<button class="stop-button" type="button" [class.active]="systemStopped()" (click)="toggleEmergencyStop()">
+				{{ systemStopped() ? 'Resume copying' : 'Emergency stop' }}
+			</button>
+			<button class="profile-chip" type="button" (click)="logout()" aria-label="Sign out of admin console">
+				<span class="avatar">{{ adminInitial() }}</span>
+				<span class="profile-copy"><strong>{{ currentAdmin()?.name || 'Loading admin...' }}</strong><small>{{
+						currentAdmin()?.role || 'ADMIN' }}</small></span>
+				<span class="logout-divider" aria-hidden="true"></span>
+				<span class="logout-action">Sign out</span>
+			</button>
+		</div>
+	</header>
+
+	<div class="page-grid">
+		<aside class="sidebar">
+			<div class="app-switcher" role="tablist" aria-label="Admin application">
+				@for (app of adminApps; track app.key) {
+				<button type="button" role="tab" class="app-tab" [class.selected]="activeApp() === app.key"
+					[disabled]="!app.enabled" [attr.aria-selected]="activeApp() === app.key"
+					[title]="app.enabled ? '' : 'MLM Admin is coming soon'" (click)="selectApp(app)">
+					<span>{{ app.label }}</span>
+					@if (!app.enabled) { <span class="nav-badge">Soon</span> }
+				</button>
+				}
+			</div>
+
+			@if (activeApp() === 'BOT') {
+			<div class="sidebar-heading">Console</div>
+			<nav class="main-nav" aria-label="Main navigation">
+				@for (item of mainNav; track item) {
+				<button type="button" [class.selected]="activeSection() === item" (click)="selectSection(item)">
+					<span class="nav-marker"></span><span>{{ item }}</span>
+				</button>
+				}
+			</nav>
+
+			<div class="sidebar-divider"></div>
+			<div class="sidebar-heading">Copy Trading</div>
+			<nav class="main-nav" aria-label="Copy trading navigation">
+				@for (item of copyTradingNav; track item) {
+				<button type="button" [class.selected]="activeSection() === item" (click)="selectSection(item)">
+					<span class="nav-marker"></span><span>{{ item }}</span>
+					@if (item !== 'Leader Trading' && item!=='Active Trades')
+					{
+					<span class="nav-badge">Soon</span>
+					}
+				</button>
+				}
+			</nav>
+			} @else {
+			<!-- MLM Admin sidebar placeholder — real nav (MLM, Rewards, Royalty, Leg Matching, Payments)
+				     arrives once the MLM admin backend exists. Switcher tab is disabled until then. -->
+			<div class="sidebar-heading">MLM Admin</div>
+			<div class="data-state">Coming soon.</div>
+			}
+		</aside>
+
+		<main class="content">
+
+			@switch (activeSection()) {
+
+			@case ('Overview') {
+			<section class="welcome-row">
+				<div>
+					<p class="eyebrow">Copy trading build</p>
+					<h1>Control room</h1>
+				</div>
+			</section>
+
+			<section class="metric-grid" aria-label="Copy engine summary">
+				<article class="metric-card"><span class="metric-label">Active followers</span><strong
+						class="metric-value">&mdash;</strong><span class="metric-note">Wired once
+						CopyTradingSubscription ships (Phase 4)</span></article>
+				<article class="metric-card"><span class="metric-label">Copies today</span><strong
+						class="metric-value">&mdash;</strong><span class="metric-note">Wired once CopyTradeExecution
+						ships (Phase 6)</span></article>
+				<article class="metric-card"><span class="metric-label">Failed copies</span><strong
+						class="metric-value">&mdash;</strong><span class="metric-note">Wired once execution monitor
+						ships</span></article>
+				<article class="metric-card"><span class="metric-label">P50 copy latency</span><strong
+						class="metric-value">&mdash;</strong><span class="metric-note">Measured only once followers
+						exist</span></article>
+			</section>
+
+			<app-live-binance-chart></app-live-binance-chart>
+
+			
+			}
+
+			@case ('Leader Trading') {
+			<section class="welcome-row">
+				<div>
+					<p class="eyebrow">Leader trade engine</p>
+					<h1>Leader Trading</h1>
+					
+				</div>
+			</section>
+
+			<app-live-binance-chart></app-live-binance-chart>
+
+			<section class="panel ai-panel">
+				<div class="panel-header ai-engine-header">
+					<div class="ai-title-row">
+						<span class="ai-icon">🤖</span>
+						<h2>AI Autonomous Futures Engine</h2>
+					</div>
+					<div class="ai-engine-status">
+						<span class="ai-engine-label">Engine Status:</span>
+						<button class="ai-engine-badge" type="button" [class.on]="aiBotEnabled()"
+							[disabled]="systemStopped()"
+							[title]="aiBotEnabled() ? 'Click to stop the AI bot' : 'Click to enable the AI bot'"
+							(click)="toggleAiBot()">
+							{{ aiBotEnabled() ? 'AUTONOMOUS [ON]' : 'MANUAL [OFF]' }}
+						</button>
+					</div>
+				</div>
+
+				@if (aiError()) {
+				<div class="data-state error-state" role="alert">{{ aiError() }}</div>
+				} @else if (aiData()) {
+				<div class="ai-overview">
+					<div>
+						<span class="ai-overview-label">Overall Market Decision:</span>
+						<span class="ai-overview-note">Total Suggested Setups: {{ aiData()?.total_trades ?? 0 }}</span>
+					</div>
+					<strong class="ai-decision-value" [class.long]="aiData()?.overall_decision === 'LONG'"
+						[class.short]="aiData()?.overall_decision === 'SHORT'"
+						[class.hold]="aiData()?.overall_decision === 'HOLD'">
+						{{ aiData()?.overall_decision }}
+					</strong>
+				</div>
+
+				@for (trade of aiData()?.trades; track trade.trade_id) {
+				<div class="ai-trade-card">
+					<div class="ai-trade-head">
+						<span class="ai-trade-decision" [class.long]="trade.decision === 'LONG'"
+							[class.short]="trade.decision === 'SHORT'" [class.hold]="trade.decision === 'HOLD'">{{
+							trade.decision }}</span>
+						<span class="ai-trade-conf">Conf: <strong>{{ trade.confidence }}%</strong></span>
+					</div>
+					<div class="ai-trade-grid">
+						<span>Risk: <strong>{{ trade.risk }}</strong></span>
+						<span>Trend: <strong>{{ trade.trend }}</strong></span>
+						<span>Lev: <strong class="amber">{{ trade.leverage }}x</strong></span>
+						<span>Margin: <strong>${{ trade.margin_usd }}</strong></span>
+						<span>SL: <strong class="red">${{ trade.stop_loss }}</strong></span>
+						<span>TP: <strong class="green">${{ trade.take_profit }}</strong></span>
+					</div>
+					@if (trade.summary) { <p class="ai-trade-summary">{{ trade.summary }}</p> }
+				</div>
+				}
+
+				<p class="ai-note">
+					Polls the AI engine every 3 minutes &middot; last checked {{ aiLastCheckedAt() }}. When
+					<strong>OFF</strong>, the AI never calls <code>/trade/execute</code> &mdash; only the manual form
+					below can place orders.
+					@if (systemStopped()) { The global emergency stop is active, so the AI bot cannot trade even if
+					switched on. }
+				</p>
+				} @else {
+				<div class="data-state">Booting AI engine and analyzing the market...</div>
+				}
+			</section>
+
+			<section class="content-columns">
+				<article class="panel">
+					<div class="panel-header">
+						<div>
+							<p class="eyebrow">Open position</p>
+							<h2>New leader trade</h2>
+						</div>
+					</div>
+
+					@if (tradeError()) { <div class="data-state error-state" role="alert">{{ tradeError() }}</div> }
+					@if (systemStopped()) { <div class="data-state error-state" role="alert">Emergency stop is active
+						&mdash; trade execution is disabled locally.</div> }
+
+					<form [formGroup]="tradeForm" (ngSubmit)="executeTrade()" class="trade-form">
+						<label>Symbol<input type="text" formControlName="symbol" placeholder="BTCUSDT"></label>
+						<label>Direction
+							<select formControlName="direction">
+								<option value="LONG">LONG</option>
+								<option value="SHORT">SHORT</option>
+							</select>
+						</label>
+						<label>Margin (USD)
+							<input type="number" formControlName="marginUsd" placeholder="100">
+						</label>
+
+						<label>Leverage
+							<input type="number" formControlName="leverage" min="1" max="125">
+							<span style="color: #8b959c; font-size: 10px; margin-top: 2px;">
+								Position Size: <strong style="color: #1a2226;">{{ calculatedBtcQty }} BTC</strong>
+							</span>
+						</label>
+						
+						<label>Stop loss <span class="optional">(optional)</span><input type="text"
+								formControlName="stopLoss" placeholder="e.g. 63500"></label>
+						<label>Take profit <span class="optional">(optional)</span><input type="text"
+								formControlName="takeProfit" placeholder="e.g. 67500"></label>
+						<button class="submit-button" type="submit" [disabled]="submitting() || systemStopped()">{{
+							submitting() ? 'Sending order...' : 'Open leader trade' }}</button>
+					</form>
+				</article>
+
+				<article class="panel">
+					<div class="panel-header">
+						<div>
+							<p class="eyebrow">Close position</p>
+							<h2>Close leader trade</h2>
+						</div>
+					</div>
+					@if (closeError()) { <div class="data-state error-state" role="alert">{{ closeError() }}</div> }
+					<div class="close-form">
+						<label>Symbol<input type="text" [value]="closeSymbol()"
+								(input)="closeSymbol.set($any($event.target).value)" placeholder="BTCUSDT"></label>
+						<label>Direction
+							<select [value]="closeDirection()" (change)="closeDirection.set($any($event.target).value)">
+								<option value="LONG">LONG</option>
+								<option value="SHORT">SHORT</option>
+							</select>
+						</label>
+						<button class="submit-button dark" type="button" [disabled]="closing()"
+							(click)="closeAllForDirection()">{{ closing() ? 'Closing...' : 'Close all in this direction'
+							}}</button>
+					</div>
+				</article>
+			</section>
+
+			<section class="panel">
+				<div class="panel-header">
+					<div>
+						<p class="eyebrow">This session</p>
+						<h2>Leader execution log</h2>
+					</div><span class="active-label">{{ tradeLog().length }} orders</span>
+				</div>
+				@if (tradeLog().length === 0) {
+				<div class="data-state">No leader trades sent yet this session.</div>
+				} @else {
+				<div class="log-table">
+					<div class="log-row log-head">
+						<span>Time</span><span>Symbol</span><span>Side</span><span>Qty</span><span>Lev</span><span>Status</span><span>Round-trip</span><span>Detail</span>
+					</div>
+					@for (entry of tradeLog(); track entry.timestamp + entry.id) {
+					<div class="log-row">
+						<span>{{ entry.timestamp }}</span>
+						<span>{{ entry.symbol }}</span>
+						<span [class.long]="entry.direction === 'LONG'" [class.short]="entry.direction === 'SHORT'">{{
+							entry.direction }}</span>
+						<span>{{ entry.quantity }}</span>
+						<span>{{ entry.leverage }}x</span>
+						<span [class.success]="entry.status === 'SUCCESS'" [class.failed]="entry.status === 'FAILED'">{{
+							entry.status }}</span>
+						<span>{{ entry.latencyMs }} ms</span>
+						<span class="log-detail">{{ entry.message }}</span>
+					</div>
+					}
+				</div>
+				<p class="log-footnote">This is browser-to-backend round-trip time for the leader order itself, not
+					follower copy latency &mdash; that measurement (leader ACK &rarr; follower ACK) is introduced with
+					the Copy Trading Engine and its P50/P95/P99 dashboard.</p>
+				}
+			</section>
+			}
+
+			@default {
+			<section class="welcome-row">
+				<div>
+
+					<h1>{{ activeSection() }}</h1>
+					<p class="welcome-copy">This screen lights up once the matching backend piece exists.</p>
+				</div>
+			</section>
+			<section class="panel placeholder-panel">
+				@switch (activeSection()) {
+				@case ('Active Trades') {
+				<section class="welcome-row">
+					<div>
+						<p class="eyebrow">Portfolio</p>
+
+						<p class="welcome-copy">Monitor and manage open positions pulled directly from the PostgreSQL
+							database. Limit edits sync to Binance immediately.</p>
+					</div>
+					<button class="outline-button" (click)="fetchActiveTrades()">Refresh Database</button>
+				</section>
+
+				<section class="panel">
+					<div class="panel-header">
+						<h2>Open Master Positions</h2>
+						<span class="active-label">{{ activeTrades().length }} ACTIVE</span>
+					</div>
+
+					@if (loadingTrades()) {
+					<div class="data-state">Fetching verified trades from database...</div>
+					} @else if (activeTrades().length === 0) {
+					<div class="data-state">No active trades currently open.</div>
+					} @else {
+					<div class="log-table">
+						<!-- Headers -->
+						<div class="active-trade-row log-head">
+							<span>Symbol</span>
+							<span>Side</span>
+							<span>Size</span>
+							<span>Entry Price</span>
+							<span>Mark Price</span>
+							<span>SL / TP Limits</span>
+							<span>Live PNL</span>
+							<span>Actions</span>
+						</div>
+
+						<!-- Trade Rows -->
+						@for (trade of activeTrades(); track trade.id) {
+						<div class="active-trade-row">
+							<strong>{{ trade.symbol }}</strong>
+
+							<span [class.long]="trade.positionSide === 'LONG'"
+								[class.short]="trade.positionSide === 'SHORT'">
+								{{ trade.positionSide }} <small style="color:#8b959c;">x{{ trade.leverage }}</small>
+							</span>
+
+							<span>{{ trade.quantity }}</span>
+							<span>${{ trade.executedPrice | number:'1.2-2' }}</span>
+							<span>${{ livePrice() | number:'1.2-2' }}</span>
+
+							<!-- SL/TP Editable Column -->
+							<div>
+								@if (editingLimits() === trade.id) {
+								<div style="display: grid; gap: 4px;">
+									<input type="number" class="limit-input" [value]="editSL()"
+										(input)="editSL.set($any($event.target).value)" placeholder="Stop Loss">
+									<input type="number" class="limit-input" [value]="editTP()"
+										(input)="editTP.set($any($event.target).value)" placeholder="Take Profit">
+									<div style="display: flex; gap: 4px;">
+										<button class="btn-save" (click)="saveLimits(trade.id)">Save</button>
+										<button class="btn-cancel" (click)="cancelEdit()">Cancel</button>
+									</div>
+								</div>
+								} @else {
+								<div style="display: grid; gap: 4px; font-size: 11px;">
+									<span style="color: #d64550; font-weight: bold;">SL: {{ trade.stopLoss ?
+										'$'+trade.stopLoss : 'None' }}</span>
+									<span style="color: #0ecb81; font-weight: bold;">TP: {{ trade.takeProfit ?
+										'$'+trade.takeProfit : 'None' }}</span>
+								</div>
+								}
+							</div>
+
+							<!-- Live PNL Calculation -->
+							<strong
+								[ngStyle]="{'color': getTradePnL(trade) >= 0 ? '#0ecb81' : '#d64550', 'font-size': '14px'}">
+								{{ getTradePnL(trade) >= 0 ? '+' : '' }}{{ getTradePnL(trade) | number:'1.2-2' }}
+							</strong>
+
+							<!-- Execution Buttons -->
+							<div style="display: flex; gap: 6px;">
+								@if (editingLimits() !== trade.id) {
+								<button class="outline-button" (click)="startEditLimits(trade)"
+									style="padding: 5px 10px;">Edit Limits</button>
+								}
+								<button class="stop-button" (click)="closeTrade(trade.id)"
+									style="padding: 5px 10px;">Close</button>
+							</div>
+						</div>
+						}
+					</div>
+					}
+				</section>
+				}
+				@case ('Followers') { <p>Needs <code>CopyTradingSubscription</code> (Phase 4) so we know who is
+					following, their copy ratio, and their status.</p> }
+				@case ('Execution Monitor') { <p>Needs <code>CopyTradeExecution</code> records (Phase 6) so each
+					follower order can be tracked from PENDING through FILLED.</p> }
+				@case ('Failed Copies') { <p>Needs the same <code>CopyTradeExecution</code> table, filtered to
+					FAILED/SKIPPED rows with their error codes.</p> }
+				@case ('Latency Monitor') { <p>Needs recorded <code>latency_ms</code> per follower execution (Phase 6)
+					to compute P50 / P95 / P99 for the 100-user test.</p> }
+				}
+			</section>
+			}
+			}
+		</main>
+	</div>
+</div>

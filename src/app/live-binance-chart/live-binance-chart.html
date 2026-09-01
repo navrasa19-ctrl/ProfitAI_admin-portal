@@ -1,0 +1,49 @@
+<div class="chart-frame">
+
+  <!-- Top Banner Stats -->
+  <div class="stats-strip">
+
+    <div>
+      <span class="stat-label">LEADER MARK PRICE</span>
+      <strong class="stat-price">{{ price() ? ('$' + (price()! | number:'1.2-2')) : '--' }}</strong>
+    </div>
+
+    <div>
+      <span class="stat-label">24H CHANGE</span>
+      <strong class="stat-change" [class.negative]="priceChangePercent() < 0">
+        {{ priceChangePercent() >= 0 ? '&#8599; +' : '&#8600; ' }}{{ priceChangePercent() | number:'1.2-2' }}%
+      </strong>
+    </div>
+
+    <div>
+      <span class="stat-label">24H HIGH</span>
+      <strong class="stat-value">${{ highPrice() | number:'1.2-2' }}</strong>
+    </div>
+
+    <div>
+      <span class="stat-label">24H LOW</span>
+      <strong class="stat-value">${{ lowPrice() | number:'1.2-2' }}</strong>
+    </div>
+
+    <div>
+      <span class="stat-label">24H VOLUME (BTC)</span>
+      <strong class="stat-value">{{ volume() | number:'1.2-2' }} BTC</strong>
+    </div>
+
+    <div>
+      <span class="stat-label">SYMBOL</span>
+      <strong class="stat-value symbol-value">BTCUSDT-PERP</strong>
+    </div>
+
+  </div>
+
+  <!-- TradingView Advanced Chart Widget Container -->
+  <div class="chart-body">
+    <div id="admin_tv_chart_container" #chartContainer class="chart-canvas"></div>
+  </div>
+
+  <div class="chart-footer">
+    <span>This is the leader instrument. Leader trades placed below execute against this symbol.</span>
+  </div>
+
+</div>
