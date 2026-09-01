@@ -146,8 +146,8 @@ export class AdminDashboard implements OnInit, OnDestroy {
   readonly closeError = signal('');
 
   // --- AI Autonomous Bot (same /analyze contract as the user portal's crypto-dashboard) ---
-  private static readonly AI_ENDPOINT = 'https://ai-trader-1-3gmk.onrender.com/analyze';
-  private static readonly AI_POLL_MS = 180000; // 3 min, matches user portal's polling cadence
+  private static readonly AI_ENDPOINT = 'http://187.53.129.115:8000/analyze';
+  private static readonly AI_POLL_MS = 180000; 
   private static readonly AI_CONFIDENCE_THRESHOLD = 60;
   private static readonly AI_DEFAULT_MARGIN_USD = 50;
 
