@@ -228,7 +228,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
   // ==================== 🎯 ACTIVE TRADES LOGIC ====================
   fetchActiveTrades(): void {
     this.loadingTrades.set(true);
-    this.http.get<LeaderTrade[]>(`${environment.apiUrl}/trade/active`).subscribe({
+    this.http.get<LeaderTrade[]>(`${environment.apiUrl}/v1/admin/trade/active`).subscribe({
       next: (trades) => {
         this.activeTrades.set(trades);
         this.loadingTrades.set(false);
@@ -250,7 +250,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
 
   closeTrade(tradeId: string): void {
     if (!confirm('Liquidate this leader position?')) return;
-    this.http.post(`${environment.apiUrl}/trade/close/${tradeId}`, {}).subscribe({
+    this.http.post(`${environment.apiUrl}/v1/admin/trade/close/${tradeId}`, {}).subscribe({
       next: () => {
         // Remove from UI instantly
         this.activeTrades.set(this.activeTrades().filter(t => t.id !== tradeId));
@@ -272,7 +272,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
       takeProfit: this.editTP()
     };
 
-    this.http.post(`${environment.apiUrl}/trade/update-limits`, payload).subscribe({
+    this.http.post(`${environment.apiUrl}/v1/admin/trade/update-limits`, payload).subscribe({
       next: () => {
         this.activeTrades.update(trades => trades.map(t => {
           if (t.id === tradeId) return { ...t, stopLoss: this.editSL(), takeProfit: this.editTP() };
@@ -333,7 +333,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
     this.tradeError.set('');
     const startedAt = performance.now();
 
-    this.http.post<{ binanceResponse: string; tradeId: string }>(`${environment.apiUrl}/trade/execute`, body).subscribe({
+    this.http.post<{ binanceResponse: string; tradeId: string }>(`${environment.apiUrl}/v1/admin/trade/execute`, body).subscribe({
       next: response => {
         const latencyMs = Math.round(performance.now() - startedAt);
         this.submitting.set(false);
@@ -378,7 +378,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
     const symbol = this.closeSymbol().toUpperCase();
     const direction = this.closeDirection();
 
-    this.http.post(`${environment.apiUrl}/trade/close-all/${symbol}?direction=${direction}`, {}).subscribe({
+    this.http.post(`${environment.apiUrl}/v1/admin/trade/close-all/${symbol}?direction=${direction}`, {}).subscribe({
 
       next: () => this.closing.set(false),
       error: error => {
@@ -456,7 +456,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
     this.aiTradeInFlight = true;
     const startedAt = performance.now();
 
-    this.http.post<{ tradeId: string }>(`${environment.apiUrl}/trade/execute`, body).subscribe({
+    this.http.post<{ tradeId: string }>(`${environment.apiUrl}/v1/admin/trade/execute`, body).subscribe({
       next: response => {
         this.aiTradeInFlight = false;
         const latencyMs = Math.round(performance.now() - startedAt);
