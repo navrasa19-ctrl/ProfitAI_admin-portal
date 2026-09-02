@@ -51,17 +51,20 @@ interface RoadmapPhase {
 }
 
 // Same AI service contract the user portal's crypto-dashboard already consumes.
-interface AiTrade {
+export interface AiTrade {
   trade_id: number;
   decision: 'LONG' | 'SHORT' | 'HOLD';
   confidence: number;
-  risk: string;
-  trend: string;
-  leverage: number;
-  margin_usd: number;
-  stop_loss: number;
-  take_profit: number;
   summary: string;
+  reason?: string[]; // 🎯 ADDED: Array to hold the AI's step-by-step logic
+  
+  // 🎯 Make these optional because HOLD decisions do not include them
+  risk?: string;
+  trend?: string;
+  leverage?: number;
+  margin_usd?: number;
+  stop_loss?: number;
+  take_profit?: number;
 }
 
 interface AiResult {
@@ -433,8 +436,9 @@ export class AdminDashboard implements OnInit, OnDestroy {
       return;
     }
 
-    const margin = pick.margin_usd > 0 ? pick.margin_usd : AdminDashboard.AI_DEFAULT_MARGIN_USD;
-    const quantity = ((margin * pick.leverage) / price).toFixed(3);
+    const margin = pick.margin_usd || AdminDashboard.AI_DEFAULT_MARGIN_USD;
+    const lev = pick.leverage || 1;
+    const quantity = ((margin * lev) / price).toFixed(3);
     if (Number(quantity) <= 0) return;
 
     const body: Record<string, unknown> = {
@@ -461,7 +465,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
           symbol: 'BTCUSDT',
           direction: pick.decision as 'LONG' | 'SHORT',
           quantity,
-          leverage: pick.leverage,
+          leverage: pick.leverage ?? 1,
           status: 'SUCCESS',
           message: `AI bot (conf ${pick.confidence}%): ${pick.summary || 'signal executed'}`,
           latencyMs,
@@ -488,7 +492,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
       symbol: 'BTCUSDT',
       direction: pick.decision as 'LONG' | 'SHORT',
       quantity,
-      leverage: pick.leverage,
+      leverage: pick.leverage ?? 1,
       status,
       message,
       latencyMs,

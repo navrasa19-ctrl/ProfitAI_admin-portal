@@ -1,7 +1,6 @@
 <div class="console-shell">
 	<header class="topbar">
-		<span class="brand"><span class="brand-mark">P</span><span class="brand-name">PROFIT
-				<strong>AI</strong></span><em>Admin</em></span>
+		<span class="brand"><img src="profitAI.jpeg" alt="ProfitAI" style="height: 36px; width: auto; display: block;"></span>
 
 		<div class="topbar-status">
 			<span class="live-dot" [class.stopped]="systemStopped()"></span>
@@ -141,35 +140,108 @@
 					</strong>
 				</div>
 
-				@for (trade of aiData()?.trades; track trade.trade_id) {
-				<div class="ai-trade-card">
-					<div class="ai-trade-head">
-						<span class="ai-trade-decision" [class.long]="trade.decision === 'LONG'"
-							[class.short]="trade.decision === 'SHORT'" [class.hold]="trade.decision === 'HOLD'">{{
-							trade.decision }}</span>
-						<span class="ai-trade-conf">Conf: <strong>{{ trade.confidence }}%</strong></span>
+				@if (aiData()?.overall_decision === 'HOLD') {
+					@for (trade of aiData()?.trades; track trade.trade_id) {
+					<div class="ai-trade-card">
+						<div class="ai-trade-head">
+							<span class="ai-trade-decision hold">{{ trade.decision }}</span>
+							<span class="ai-trade-conf">Conf: <strong>{{ trade.confidence }}%</strong></span>
+						</div>
+						<div class="ai-trade-grid">
+							<span>Risk: <strong>&mdash;</strong></span>
+							<span>Trend: <strong>&mdash;</strong></span>
+							<span>Lev: <strong class="amber">x</strong></span>
+							<span>Margin: <strong>$</strong></span>
+							<span>SL: <strong class="red">$</strong></span>
+							<span>TP: <strong class="green">$</strong></span>
+						</div>
+						@if (trade.summary) { <p class="ai-trade-summary">{{ trade.summary }}</p> }
+						@if (trade.reason && trade.reason.length > 0) {
+						<div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #eef0f2;">
+							<strong style="display: block; color: #14181c; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">AI Reasoning</strong>
+							<ul style="margin: 0; padding-left: 18px; color: #6b7680; font-size: 12px; line-height: 1.6;">
+								@for (point of trade.reason; track point) {
+								<li>{{ point }}</li>
+								}
+							</ul>
+						</div>
+						}
 					</div>
-					<div class="ai-trade-grid">
-						<span>Risk: <strong>{{ trade.risk }}</strong></span>
-						<span>Trend: <strong>{{ trade.trend }}</strong></span>
-						<span>Lev: <strong class="amber">{{ trade.leverage }}x</strong></span>
-						<span>Margin: <strong>${{ trade.margin_usd }}</strong></span>
-						<span>SL: <strong class="red">${{ trade.stop_loss }}</strong></span>
-						<span>TP: <strong class="green">${{ trade.take_profit }}</strong></span>
+					}
+				} @else {
+					@for (trade of aiData()?.trades; track trade.trade_id) {
+					<div class="ai-trade-card">
+						<div class="ai-trade-head">
+							<span class="ai-trade-decision" [class.long]="trade.decision === 'LONG'" [class.short]="trade.decision === 'SHORT'" [class.hold]="trade.decision === 'HOLD'">{{ trade.decision }}</span>
+							<span class="ai-trade-conf">Conf: <strong>{{ trade.confidence }}%</strong></span>
+						</div>
+						<div class="ai-trade-grid">
+							<span>Risk: <strong>{{ trade.risk }}</strong></span>
+							<span>Trend: <strong>{{ trade.trend }}</strong></span>
+							<span>Lev: <strong class="amber">{{ trade.leverage }}x</strong></span>
+							<span>Margin: <strong>${{ trade.margin_usd }}</strong></span>
+							<span>SL: <strong class="red">${{ trade.stop_loss }}</strong></span>
+							<span>TP: <strong class="green">${{ trade.take_profit }}</strong></span>
+						</div>
+						@if (trade.summary) { <p class="ai-trade-summary">{{ trade.summary }}</p> }
+						@if (trade.reason && trade.reason.length > 0) {
+						<div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid #eef0f2;">
+							<strong style="display: block; color: #14181c; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px;">AI Reasoning</strong>
+							<ul style="margin: 0; padding-left: 18px; color: #6b7680; font-size: 12px; line-height: 1.6;">
+								@for (point of trade.reason; track point) {
+								<li>{{ point }}</li>
+								}
+							</ul>
+						</div>
+						}
 					</div>
-					@if (trade.summary) { <p class="ai-trade-summary">{{ trade.summary }}</p> }
-				</div>
+					}
 				}
 
 				<p class="ai-note">
-					Polls the AI engine every 3 minutes &middot; last checked {{ aiLastCheckedAt() }}. When
-					<strong>OFF</strong>, the AI never calls <code>/trade/execute</code> &mdash; only the manual form
-					below can place orders.
+					Polls the AI engine every 3 minutes &middot; last checked {{ aiLastCheckedAt() }}.
 					@if (systemStopped()) { The global emergency stop is active, so the AI bot cannot trade even if
 					switched on. }
 				</p>
 				} @else {
-				<div class="data-state">Booting AI engine and analyzing the market...</div>
+				<!-- 🎯 Loading Placeholder Cards -->
+				<div class="ai-trade-card ai-skeleton-placeholder">
+					<div class="ai-trade-head">
+						<span class="skeleton-decision-badge"></span>
+						<span class="skeleton-conf"></span>
+					</div>
+					<div class="ai-trade-grid">
+						<span class="skeleton-line short"></span>
+						<span class="skeleton-line short"></span>
+						<span class="skeleton-line short"></span>
+						<span class="skeleton-line short"></span>
+						<span class="skeleton-line short"></span>
+						<span class="skeleton-line short"></span>
+					</div>
+					<p class="ai-trade-summary">
+						<span class="skeleton-line full"></span>
+						<span class="skeleton-line full"></span>
+					</p>
+				</div>
+
+				<div class="ai-trade-card ai-skeleton-placeholder">
+					<div class="ai-trade-head">
+						<span class="skeleton-decision-badge"></span>
+						<span class="skeleton-conf"></span>
+					</div>
+					<div class="ai-trade-grid">
+						<span class="skeleton-line short"></span>
+						<span class="skeleton-line short"></span>
+						<span class="skeleton-line short"></span>
+						<span class="skeleton-line short"></span>
+						<span class="skeleton-line short"></span>
+						<span class="skeleton-line short"></span>
+					</div>
+					<p class="ai-trade-summary">
+						<span class="skeleton-line full"></span>
+						<span class="skeleton-line full"></span>
+					</p>
+				</div>
 				}
 			</section>
 
