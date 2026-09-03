@@ -150,7 +150,8 @@ export class AdminDashboard implements OnInit, OnDestroy {
 
   // --- AI Autonomous Bot (same /analyze contract as the user portal's crypto-dashboard) ---
   private static readonly AI_ENDPOINT = 'http://187.53.129.115:8000/analyze';
-  private static readonly AI_POLL_MS = 180000; 
+  private static readonly AI_POLL_MS = 180000;
+  private static readonly AI_CACHE_KEY = 'ai_last_fetch_ts';
   private static readonly AI_CONFIDENCE_THRESHOLD = 60;
   private static readonly AI_DEFAULT_MARGIN_USD = 50;
 
@@ -190,8 +191,9 @@ export class AdminDashboard implements OnInit, OnDestroy {
 
     this.connectPriceFeed();
     this.fetchActiveTrades();
-    this.loadAiData();
-    this.aiPollHandle = setInterval(() => this.loadAiData(), AdminDashboard.AI_POLL_MS);
+    this.fetchAiBotState();
+    this.loadAiDataIfDue();
+    this.aiPollHandle = setInterval(() => this.loadAiDataIfDue(), AdminDashboard.AI_POLL_MS);
   }
 
   ngOnDestroy(): void {
@@ -290,8 +292,19 @@ export class AdminDashboard implements OnInit, OnDestroy {
 
   // Single control that doubles as ON/OFF and emergency stop for the AI bot only —
   // manual leader trading (the form below) is unaffected by this toggle.
+  private fetchAiBotState(): void {
+    this.http.get<{ enabled: boolean }>(`${environment.apiUrl}/v1/admin/settings/ai-bot`).subscribe({
+      next: res => this.aiBotEnabled.set(res.enabled),
+      error: () => {} // silently keep default false
+    });
+  }
+
   toggleAiBot(): void {
-    this.aiBotEnabled.set(!this.aiBotEnabled());
+    const next = !this.aiBotEnabled();
+    this.http.post<{ enabled: boolean }>(`${environment.apiUrl}/v1/admin/settings/ai-bot`, { enabled: next }).subscribe({
+      next: res => this.aiBotEnabled.set(res.enabled),
+      error: () => {} // revert on failure
+    });
   }
 
   executeTrade(): void {
@@ -395,6 +408,24 @@ export class AdminDashboard implements OnInit, OnDestroy {
   // --- AI bot: fetch decision, then (if enabled) execute through the same /trade/execute
   // endpoint the manual form uses, so every AI order lands in the same log/rules/limits. ---
 
+  private loadAiDataIfDue(): void {
+    const lastFetch = Number(localStorage.getItem(AdminDashboard.AI_CACHE_KEY) || 0);
+    const elapsed = Date.now() - lastFetch;
+    if (elapsed < AdminDashboard.AI_POLL_MS) {
+      // Not due yet — restore cached data from localStorage if available
+      const cached = localStorage.getItem('ai_last_result');
+      if (cached && !this.aiData()) {
+        try {
+          this.aiData.set(JSON.parse(cached));
+          const cachedTime = localStorage.getItem('ai_last_checked');
+          if (cachedTime) this.aiLastCheckedAt.set(cachedTime + ' (cached)');
+        } catch { /* ignore corrupt cache */ }
+      }
+      return;
+    }
+    this.loadAiData();
+  }
+
   private loadAiData(): void {
     const headers = new HttpHeaders({ 'X-Frontend-Api-Key': 'navrasa-ai-secure-key-2026' });
 
@@ -412,7 +443,12 @@ export class AdminDashboard implements OnInit, OnDestroy {
         if (data && typeof data === 'object') {
           this.aiData.set(data as AiResult);
           this.aiError.set('');
-          this.aiLastCheckedAt.set(new Date().toLocaleTimeString());
+          const checkedAt = new Date().toLocaleTimeString();
+          this.aiLastCheckedAt.set(checkedAt);
+          // Persist so page reloads within 3 min skip the API call
+          localStorage.setItem(AdminDashboard.AI_CACHE_KEY, String(Date.now()));
+          localStorage.setItem('ai_last_result', JSON.stringify(data));
+          localStorage.setItem('ai_last_checked', checkedAt);
           this.maybeExecuteAiTrade(data as AiResult);
         } else {
           this.aiError.set('Invalid AI response structure.');
