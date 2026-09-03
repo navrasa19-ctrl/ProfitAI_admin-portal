@@ -420,10 +420,16 @@
 								</div>
 								} @else {
 								<div style="display: grid; gap: 4px; font-size: 11px;">
-									<span style="color: #d64550; font-weight: bold;">SL: {{ trade.stopLoss ?
-										'$'+trade.stopLoss : 'None' }}</span>
-									<span style="color: #0ecb81; font-weight: bold;">TP: {{ trade.takeProfit ?
-										'$'+trade.takeProfit : 'None' }}</span>
+									<span style="color: #d64550; font-weight: bold;">
+										SL: {{ trade.stopLoss ? '$'+trade.stopLoss : 'None' }}
+										@if (trade.trailingSlActive) {
+										<span style="background:#f59e0b;color:#fff;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px;font-weight:700;">TRAILING</span>
+										}
+									</span>
+									<span style="color: #0ecb81; font-weight: bold;">TP: {{ trade.takeProfit ? '$'+trade.takeProfit : 'None' }}</span>
+									@if (trade.trailingSlActive && trade.peakPrice) {
+									<span style="color:#8b959c;font-size:10px;">Peak: ${{ trade.peakPrice | number:'1.2-2' }}</span>
+									}
 								</div>
 								}
 							</div>
@@ -438,6 +444,8 @@
 							<div style="display: flex; gap: 6px;">
 								@if (editingLimits() !== trade.id) {
 								<button class="outline-button" (click)="startEditLimits(trade)"
+									[disabled]="trade.trailingSlActive"
+									[title]="trade.trailingSlActive ? 'Trailing SL is active — engine controls SL automatically' : ''"
 									style="padding: 5px 10px;">Edit Limits</button>
 								}
 								<button class="stop-button" (click)="closeTrade(trade.id)"

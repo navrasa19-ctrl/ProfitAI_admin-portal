@@ -26,8 +26,10 @@ export interface LeaderTrade {
   quantity: number;
   executedPrice: number;
   leverage: number;
-  stopLoss: number;
-  takeProfit: number;
+  stopLoss: number | null;
+  takeProfit: number | null;
+  peakPrice: number | null;
+  trailingSlActive: boolean;
   status: string;
   createdAt: string;
 }
