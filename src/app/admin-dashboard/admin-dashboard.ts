@@ -252,6 +252,18 @@ export class AdminDashboard implements OnInit, OnDestroy {
     return priceDiff * trade.quantity;
   }
 
+  getTradeRoi(trade: LeaderTrade): number {
+    const currentPrice = this.livePrice();
+    if (!currentPrice || !trade.executedPrice || trade.executedPrice <= 0) return 0;
+
+    const priceDiff = trade.positionSide === 'LONG'
+      ? currentPrice - trade.executedPrice
+      : trade.executedPrice - currentPrice;
+
+    const leverage = trade.leverage || 1;
+    return (priceDiff / trade.executedPrice) * leverage * 100;
+  }
+
   closeTrade(tradeId: string): void {
     if (!confirm('Liquidate this leader position?')) return;
     this.http.post(`${environment.apiUrl}/v1/admin/trade/close/${tradeId}`, {}).subscribe({

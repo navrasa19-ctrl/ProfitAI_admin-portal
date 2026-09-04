@@ -387,7 +387,7 @@
 							<span>Entry Price</span>
 							<span>Mark Price</span>
 							<span>SL / TP Limits</span>
-							<span>Live PNL</span>
+							<span>Live PNL &amp; ROI%</span>
 							<span>Actions</span>
 						</div>
 
@@ -434,11 +434,15 @@
 								}
 							</div>
 
-							<!-- Live PNL Calculation -->
-							<strong
-								[ngStyle]="{'color': getTradePnL(trade) >= 0 ? '#0ecb81' : '#d64550', 'font-size': '14px'}">
-								{{ getTradePnL(trade) >= 0 ? '+' : '' }}{{ getTradePnL(trade) | number:'1.2-2' }}
-							</strong>
+							<!-- Live PNL & ROI Calculation -->
+							<div style="display: flex; flex-direction: column; gap: 2px;">
+								<strong [ngStyle]="{'color': getTradePnL(trade) >= 0 ? '#0ecb81' : '#d64550', 'font-size': '14px'}">
+									{{ getTradePnL(trade) >= 0 ? '+' : '' }}${{ getTradePnL(trade) | number:'1.2-2' }}
+								</strong>
+								<small [ngStyle]="{'color': getTradeRoi(trade) >= 0 ? '#0ecb81' : '#d64550', 'font-size': '11px', 'font-weight': '700'}">
+									{{ getTradeRoi(trade) >= 0 ? '+' : '' }}{{ getTradeRoi(trade) | number:'1.2-2' }}%
+								</small>
+							</div>
 
 							<!-- Execution Buttons -->
 							<div style="display: flex; gap: 6px;">
